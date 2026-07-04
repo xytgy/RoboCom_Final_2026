@@ -383,7 +383,7 @@ tools = [
 
 ## Windows 实战待办
 
-- [ ] 安装 Miniconda / Anaconda
+- [x] 安装 Miniconda / Anaconda
 - [ ] 创建 conda 环境，安装 GPU 版 PyTorch
 - [ ] 验证 GPU 可用（`torch.cuda.is_available()`）
 - [ ] 下载比赛指定模型
@@ -399,3 +399,37 @@ tools = [
 - [ ] 实现跨场景编排
 - [ ] 添加安全控制
 - [ ] 准备答辩材料
+
+---
+
+## Windows 环境搭建记录（2026-07-04）
+
+### 1. 检查 Miniconda
+- 确认 Windows 上未安装 conda
+
+### 2. 下载安装 Miniconda
+- 下载 Miniconda3-latest-Windows-x86_64.exe（约 95MB）
+- 静默安装至 `C:\Users\xytgy\miniconda3`
+- 安装版本：conda 26.3.2，与 Mac 端一致
+- 接受了 conda 服务条款（pkgs/main、pkgs/r、pkgs/msys2）
+
+### 3. 检查 GPU 环境
+- GPU：NVIDIA GeForce RTX 4070 Laptop，8GB 显存
+- 驱动版本：610.62
+- CUDA UMD Version：13.3
+
+### 4. 创建虚拟环境
+- 环境名：robocom
+- Python 版本：3.10.20
+- 路径：`C:\Users\xytgy\miniconda3\envs\robocom`
+
+### 5. 安装依赖（进行中）
+- PyTorch GPU 版安装遇到问题：`cu121` 索引无法找到包
+- 尝试方案：升级 pip 后换用 `cu124` 索引，或直接安装默认版本
+
+### Windows 当前待完成
+- [ ] PyTorch GPU 版安装成功
+- [ ] 安装 transformers, accelerate, sentencepiece, protobuf, fastapi, uvicorn, peft, trl, datasets, gradio, faiss-cpu
+- [ ] 验证 GPU 可用（`torch.cuda.is_available()`）
+- [ ] 建立项目目录结构
+- [ ] 导出 requirements.txt
