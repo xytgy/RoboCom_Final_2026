@@ -372,20 +372,47 @@ tools = [
 
 ---
 
-## Mac 上今天完成的事项
+## Mac 实操进度记录
+
+### 7月4日 — 环境搭建
 
 - [x] 安装 Miniconda（conda 26.3.2）
+  - 下载地址：`https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh`
+  - 安装命令：`bash /tmp/miniconda.sh -b -p $HOME/miniconda3`
+  - 初始化：`$HOME/miniconda3/bin/conda init zsh`
 - [x] 创建虚拟环境 `robocom`（Python 3.10）
+  - `conda create -n robocom python=3.10 -y`
+  - `conda activate robocom`
 - [x] 建立项目目录结构 `competition_project/`
 - [x] 安装 PyTorch CPU 版
 - [x] 安装 transformers, accelerate, sentencepiece, protobuf, fastapi, uvicorn, peft, trl, datasets, gradio, faiss-cpu
 - [x] 了解 Git 空文件夹问题（需要 .gitkeep）
 
+### 7月4日 — 模型下载
+
+- [x] 下载 Qwen2-0.5B（Hugging Face 版本）
+  - 使用国内镜像：`HF_ENDPOINT=https://hf-mirror.com`
+  - 模型缓存位置：`~/.cache/huggingface/hub/models--Qwen--Qwen2-0.5B`
+- [x] 已有 bge-small-zh-v1.5（Embedding 模型，用于 RAG 向量化）
+
+### 7月4日 — FastAPI 服务开发
+
+- [x] 跑通 FastAPI Hello World
+- [ ] 在 FastAPI 中加载 Qwen2-0.5B 模型
+- [ ] 实现 /chat 接口（接收消息 → 模型推理 → 返回回答）
+
+### 关键踩坑记录
+
+1. **pip 安装时包名之间要有空格**：`trl gradio` 不能写成 `trlgra`
+2. **Hugging Face 直连会 SSL 报错**：需要加 `HF_ENDPOINT=https://hf-mirror.com` 走国内镜像
+3. **Git 不跟踪空文件夹**：需要放 `.gitkeep` 文件
+4. **Ollama 模型格式不通用**：Ollama 是 GGUF 格式，transformers 需要 Hugging Face 格式，不能混用
+
 ## Windows 实战待办
 
 - [x] 安装 Miniconda / Anaconda
-- [ ] 创建 conda 环境，安装 GPU 版 PyTorch
-- [ ] 验证 GPU 可用（`torch.cuda.is_available()`）
+- [x] 创建 conda 环境，安装 GPU 版 PyTorch
+- [x] 验证 GPU 可用（`torch.cuda.is_available()`）
 - [ ] 下载比赛指定模型
 - [ ] 用 FastAPI 部署模型服务
 - [ ] 准备数据并清洗脱敏
@@ -433,3 +460,38 @@ tools = [
 - [ ] 验证 GPU 可用（`torch.cuda.is_available()`）
 - [ ] 建立项目目录结构
 - [ ] 导出 requirements.txt
+
+---
+
+## 附录：FastAPI 开发指南（Java 工程师视角）
+
+> 用 Java/Spring Boot 的概念类比，帮助理解 Python/FastAPI。
+
+### 概念对照
+
+| Java / Spring Boot | Python / FastAPI |
+|---|---|
+| `@RestController` | `app = FastAPI()` |
+| `@PostMapping("/chat")` | `@app.post("/chat")` |
+| `@RequestBody ChatRequest req` | `class ChatRequest(BaseModel): message: str` |
+| `return ResponseEntity.ok(result)` | `return {"response": result}` |
+| `java -jar app.jar` 启动 | `uvicorn main:app --reload` 启动 |
+| Maven `pom.xml` | `requirements.txt` |
+| Spring Bean 初始化 | 模块顶部加载模型 |
+
+### 开发步骤
+
+1. **创建 `main.py`**：相当于创建 Spring Boot 主类
+2. **加载模型**：相当于 `@Bean` 初始化，用 `AutoTokenizer` 和 `AutoModelForCausalLM`
+3. **定义请求体**：相当于写一个 DTO 类，继承 `BaseModel`
+4. **写接口**：用 `@app.post("/chat")` 定义，接收请求体，返回 JSON
+5. **模型推理**：`tokenizer.encode()` → `model.generate()` → `tokenizer.decode()`
+6. **启动服务**：`uvicorn main:app --host 0.0.0.0 --port 8000`
+
+### 模型推理三件套
+
+```
+tokenizer(text, return_tensors="pt")   # 文字 → 数字（模型能懂的）
+model.generate(**inputs, max_new_tokens=100)  # 模型生成回答
+tokenizer.decode(output, skip_special_tokens=True)  # 数字 → 文字
+```
